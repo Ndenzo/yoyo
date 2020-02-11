@@ -18,7 +18,7 @@ import { theme, config, notification } from "../constants";
 
 const { width } = Dimensions.get("window");
 
-export default class Charge extends Component {
+export default class Receive extends Component {
      state = {
           code: "",
           checkboxes: [],
@@ -46,29 +46,23 @@ export default class Charge extends Component {
           });
 
           const data = new FormData();
-          data.append('cash_card_code', code);
-          data.append('card_id', checked);
+          data.append('code', code);
+          data.append('card', checked);
 
-          instance.post("/cash_card/add_cash", data).then(function (response) {
-
+          instance.post("/transfer/save_transfer", data).then(function (response) {
                for (let card of config.api.profile.cards) {
                     if (card.card_id === checked) {
-
-                         if(response.status === 204){
-                              config.notification.type = "warning";
-                              config.notification.message = "Something went wrong. Check your code !";
-                              config.notification.callback = "Browse";
-                              navigation.navigate("Notification");
-                         }else{
-                              card.card_wallet = response.data.card_wallet;
-                              config.notification.type = "success";
-                              config.notification.message =  "You get "+response.data.card_wallet+" GMD in your card !";
-                              config.notification.callback = "Browse";
-                              navigation.navigate("Notification");
-                         }
+                         config.notification.type = "success";
+                         config.notification.message = response.data.message;
+                         config.notification.callback = "Browse";
+                         navigation.navigate("Notification");
                     }
                }
           }).catch(function (error) {
+               config.notification.type = "warning";
+               config.notification.message = "Something went wrong. Check your code !";
+               config.notification.callback = "Browse";
+               navigation.navigate("Notification");
                console.log(error);
           });
 
@@ -105,11 +99,11 @@ export default class Charge extends Component {
                <KeyboardAvoidingView style={styles.login} behavior="padding">
                <Block padding={[0, theme.sizes.base * 2]}>
                <Text h1 bold style = {theme.screen.header} >
-               CHARGES
+               RECEIVE
                </Text>
                <Block style={styles.form}>
                <Input
-               label="Insert the card code !"
+               label="Insert the transfer code !"
                error={hasErrors("code")}
                style={[styles.input, hasErrors("code")]}
                onChangeText={text => this.setState({ code: text })}

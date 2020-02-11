@@ -19,6 +19,7 @@ export default class Login extends Component {
      };
 
      handleLogin() {
+          console.log(config.api.profile.data);
           const { navigation } = this.props;
           const { email, password } = this.state;
           const errors = [];
@@ -28,7 +29,7 @@ export default class Login extends Component {
 
           const instance = axios.create({
                baseURL: config.api.url,
-               timeout: 1000,
+               timeout: 2000,
                headers: {'api_key': config.api.api_key}
           });
 
@@ -38,18 +39,15 @@ export default class Login extends Component {
 
           instance.post("/auth/token", data).then(function (response) {
                config.api.token = response.data.token;
+               config.api.profile = response.data.profile;
                navigation.navigate("Browse");
           }).catch(function (error) {
                errors.push("email");
                errors.push("password");
-               console.log(errors);
+               console.log(error);
           });
 
           this.setState({ errors, loading: false });
-
-          //if (!errors.length) {
-          //navigation.navigate("Browse");
-          //}
      }
 
      render() {

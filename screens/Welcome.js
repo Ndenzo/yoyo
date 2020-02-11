@@ -264,7 +264,7 @@ class Welcome extends Component {
           illustrations: [
                { id: 1, source: require("../assets/images/transfer.png") },
                { id: 2, source: require("../assets/images/charge.png") },
-               { id: 3, source: require("../assets/images/pay.png") }
+               { id: 3, source: require("../assets/images/smartphone.png") }
           ]
      };
 

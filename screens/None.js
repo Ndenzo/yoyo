@@ -1,157 +1,138 @@
 import React, { Component } from "react";
 import {
-     Dimensions,
-     Image,
-     StyleSheet,
-     ScrollView,
-     TouchableOpacity
+     ActivityIndicator,
+     Keyboard,
+     KeyboardAvoidingView,
+     StyleSheet
 } from "react-native";
 
-import { Card, Badge, Button, Block, Text } from "../components";
-import { theme, mocks } from "../constants";
+import { Button, Block, Input, Text } from "../components";
+import axios from "axios";
+import { theme, config } from "../constants";
 
-const { width } = Dimensions.get("window");
-
-class Browse extends Component {
+export default class Login extends Component {
      state = {
-          active: "Products",
-          categories: []
+          email: "",
+          password: "",
+          errors: [],
+          loading: false
      };
 
-     componentDidMount() {
-          this.setState({ categories: this.props.categories });
+     getProfile(token){
+          const instance = axios.create({
+               baseURL: config.api.url,
+               timeout: 1000,
+               headers: {
+                    'api-key': config.api.api_key,
+                    'Authorization-Token': config.api.token
+               }
+          });
+
+          instance.get("/profile/get_profile").then(function (response) {
+               console.log(response);
+               return response;
+          }).catch(function (error) {
+               console.log(errors);
+          });
      }
 
-     handleTab = tab => {
-          const { categories } = this.props;
-          const filtered = categories.filter(category =>
-               category.tags.includes(tab.toLowerCase())
-          );
+     handleLogin() {
+          const { navigation } = this.props;
+          const { email, password } = this.state;
+          const errors = [];
 
-          this.setState({ active: tab, categories: filtered });
-     };
+          Keyboard.dismiss();
+          this.setState({ loading: true });
 
-     renderTab(tab) {
-          const { active } = this.state;
-          const isActive = active === tab;
+          const instance = axios.create({
+               baseURL: config.api.url,
+               timeout: 1000,
+               headers: {'api_key': config.api.api_key}
+          });
 
-          return (
-               <TouchableOpacity
-               key={`tab-${tab}`}
-               onPress={() => this.handleTab(tab)}
-               style={[styles.tab, isActive ? styles.active : null]}
-               >
-               <Text size={16} medium gray={!isActive} secondary={isActive}>
-               {tab}
-               </Text>
-               </TouchableOpacity>
-          );
+          const data = new FormData();
+          data.append('username', this.state.email);
+          data.append('password', this.state.password);
+
+          instance.post("/auth/token", data).then(function (response) {
+               config.api.token = response.data.token;
+               config.api.profile = this.getProfile();
+               navigation.navigate("Browse");
+          }).catch(function (error) {
+               errors.push("email");
+               errors.push("password");
+               console.log(error);
+          });
+
+          this.setState({ errors, loading: false });
      }
 
      render() {
-          const { profile, navigation } = this.props;
-          const { categories } = this.state;
-          return (
-               <Block style={{backgroundColor: theme.colors.primary,}}>
-               <Block flex={false} row center space="between" style={styles.header}>
-               <Text h4 style = {{marginLeft: 10, color: theme.colors.primary, fontWeight: "bold"}}>{"\n"}Ndenzo {"\n"}Solde : 345 000 GMD {"\n"}Cards : 3{"\n"}</Text>
-               <Image source={require('../assets/icon.png')} style={ styles.logo} />
-               </Block>
+          const { navigation } = this.props;
+          const { loading, errors } = this.state;
+          const hasErrors = key => (errors.includes(key) ? styles.hasErrors : null);
 
-               <ScrollView
-               showsVerticalScrollIndicator={false}
-               style={{ paddingVertical: theme.sizes.base * 2 }}
+          return (
+               <KeyboardAvoidingView style={styles.login} behavior="padding">
+               <Block padding={[0, theme.sizes.base * 2]}>
+               <Text h1 bold style = {theme.screen.header} >
+               AUTHENTICATION
+               </Text>
+               <Block middle>
+               <Input
+               label="Email"
+               error={hasErrors("email")}
+               style={[styles.input, hasErrors("email")]}
+               onChangeText={text => this.setState({ email: text })}
+               />
+               <Input
+               secure
+               label="Password"
+               error={hasErrors("password")}
+               style={[styles.input, hasErrors("password")]}
+               onChangeText={text => this.setState({ password: text })}
+               />
+               <Button gradient onPress={() => this.handleLogin()}>
+               {loading ? (
+                    <ActivityIndicator size="small" color="white" />
+               ) : (
+                    <Text bold white center>
+                    Login
+                    </Text>
+               )}
+               </Button>
+
+               <Button onPress={() => navigation.navigate("Forgot")}>
+               <Text
+               gray
+               caption
+               center
+               style={{ textDecorationLine: "underline" }}
                >
-               <Block flex={false} row space="between" style={styles.categories}>
-               {categories.map(category => (
-                    <TouchableOpacity
-                    key={category.name}
-                    onPress={() => navigation.navigate(category.screen)}
-                    >
-                    <Card center middle shadow style={styles.category}>
-                    <Badge
-                    margin={[0, 0, 15]}
-                    size={80}
-                    color="rgba(119,183,232,0.20)"
-                    >
-                    <Image source={category.image} style={{width: theme.sizes.md, height: theme.sizes.md,}}/>
-                    </Badge>
-                    <Text medium height={20}>
-                    {category.name}
-                    </Text>
-                    <Text gray caption style={{textAlign: 'center', fontSize: 10,}}>
-                    {category.desc}
-                    </Text>
-                    </Card>
-                    </TouchableOpacity>
-               ))}
-               </Block>
-               </ScrollView>
-               <Block style={styles.bottom}>
-               <Button white onPress={() => navigation.navigate("Welcome")} style={{width: 60, height: 60, borderRadius: 30, margin: 30, alignItems: "center", marginLeft: (width - 90)}}>
-               <Image source={require("../assets/icons/logout.png")} style={{width: 30, height: 30}}/>
+               Forgot your password?
+               </Text>
                </Button>
                </Block>
                </Block>
-
-
+               </KeyboardAvoidingView>
           );
      }
 }
 
-Browse.defaultProps = {
-     profile: mocks.profile,
-     categories: mocks.categories
-};
-
-export default Browse;
-
 const styles = StyleSheet.create({
-     header: {
-          height: 120,
-          backgroundColor: '#FFFFFF',
-          borderBottomLeftRadius: 20,
-          borderBottomRightRadius: 20,
+     login: {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center"
      },
-     logo: {
-          alignContent:'center',
-          flex: 2,
-          width: 100,
-          height: 100,
-          resizeMode: 'contain',
-     },
-     avatar: {
-          height: theme.sizes.base * 2.2,
-          width: theme.sizes.base * 2.2
-     },
-     tabs: {
+     input: {
+          borderRadius: 0,
+          borderWidth: 0,
           borderBottomColor: theme.colors.gray2,
           borderBottomWidth: StyleSheet.hairlineWidth,
-          marginVertical: theme.sizes.base,
-          marginHorizontal: theme.sizes.base * 2
+          width: 300,
      },
-     tab: {
-          marginRight: theme.sizes.base * 2,
-          paddingBottom: theme.sizes.base
-     },
-     active: {
-          borderBottomColor: theme.colors.secondary,
-          borderBottomWidth: 3
-     },
-     categories: {
-          flexWrap: "wrap",
-          paddingHorizontal: theme.sizes.base * 2,
-          marginBottom: theme.sizes.base * 3.5
-     },
-     category: {
-          // this should be dynamic based on screen width
-          minWidth: (width - theme.sizes.padding * 2.4 - theme.sizes.base) / 2,
-          maxWidth: (width - theme.sizes.padding * 2.4 - theme.sizes.base) / 2,
-          maxHeight: (width - theme.sizes.padding * 2.4 - theme.sizes.base) / 2
-     },
-     bottom: {
-          flex: 4,
-          justifyContent: 'flex-end',
-          marginBottom: 36,
+     hasErrors: {
+          borderBottomColor: theme.colors.accent
      }
 });

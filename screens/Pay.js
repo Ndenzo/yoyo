@@ -13,48 +13,23 @@ import axios from "axios";
 
 const { width } = Dimensions.get("window");
 
-class Browse extends Component {
+class Pay extends Component {
      state = {
           active: "Products",
-          categories: [],
-          instance : axios.create({
-               baseURL: config.api.url,
-               timeout: 1000,
-               headers: {
-                    'api-key': config.api.api_key,
-                    'Authorization-Token': config.api.token,
-               }
-          }),
+          pay_type: []
      };
 
-     info = instance => {
-          instance.get("/profile/get_profile").then(function (response) {
-               config.api.profile = response.data.profile;
-          }).catch(function (error) {
-               config.notification.type = "warning";
-               config.notification.message =  "Check your authentication informations !";
-               config.notification.callback = "Browse";
-               console.log(error);
-               navigation.navigate("Notification");
-          });
-     }
-
      componentDidMount() {
-          this.interval = setInterval(() => this.setState({ time: Date.now() }), 5000);
-          this.setState({ categories: this.props.categories });
-     }
-
-     componentWillUnmount() {
-          clearInterval(this.interval);
+          this.setState({ pay_type: this.props.pay_type });
      }
 
      handleTab = tab => {
-          const { categories } = this.props;
-          const filtered = categories.filter(category =>
+          const { pay_type } = this.props;
+          const filtered = pay_type.filter(category =>
                category.tags.includes(tab.toLowerCase())
           );
 
-          this.setState({ active: tab, categories: filtered });
+          this.setState({ active: tab, pay_type: filtered });
      };
 
      renderTab(tab) {
@@ -75,15 +50,27 @@ class Browse extends Component {
      }
 
      render() {
-
           const { profile, navigation } = this.props;
-          const { categories, instance } = this.state;
-
+          const { pay_type } = this.state;
+          const instance = axios.create({
+               baseURL: config.api.url,
+               timeout: 1000,
+               headers: {
+                    'api-key': config.api.api_key,
+                    'Authorization-Token': config.api.token,
+               }
+          });
+          instance.get("/profile/get_profile").then(function (response) {
+               config.api.profile = response.data.profile;
+          }).catch(function (error) {
+               errors.push("email");
+               errors.push("password");
+               console.log(error);
+          });
           return (
-               <Block style={{backgroundColor: theme.colors.primary, marginTop: 20,}}>
+               <Block style={{backgroundColor: theme.colors.primary,}}>
                <Block flex={false} row center space="between" style={styles.header}>
                <Text h4 style = {{marginLeft: 10, color: theme.colors.primary, fontWeight: "bold"}}>
-               {this.info(instance)}
                {"\n"}{config.api.profile.user_nicename}
                {"\n"}Solde : {config.api.profile.solde}
                {"\n"}Cards : {config.api.profile.cards_num}{"\n"}
@@ -95,8 +82,8 @@ class Browse extends Component {
                showsVerticalScrollIndicator={false}
                style={{ paddingVertical: theme.sizes.base * 2 }}
                >
-               <Block flex={false} row space="between" style={styles.categories}>
-               {categories.map(category => (
+               <Block flex={false} row space="between" style={styles.pay_type}>
+               {pay_type.map(category => (
                     <TouchableOpacity
                     key={category.name}
                     onPress={() => navigation.navigate(category.screen)}
@@ -132,12 +119,12 @@ class Browse extends Component {
      }
 }
 
-Browse.defaultProps = {
+Pay.defaultProps = {
      profile: mocks.profile,
-     categories: mocks.categories
+     pay_type: mocks.pay_type
 };
 
-export default Browse;
+export default Pay;
 
 const styles = StyleSheet.create({
      header: {
@@ -171,7 +158,7 @@ const styles = StyleSheet.create({
           borderBottomColor: theme.colors.secondary,
           borderBottomWidth: 3
      },
-     categories: {
+     pay_type: {
           flexWrap: "wrap",
           paddingHorizontal: theme.sizes.base * 2,
           marginBottom: theme.sizes.base * 3.5

@@ -1,33 +1,68 @@
 const categories = [
      {
           id: "transfers",
-          name: "transfers",
-          screen: "None",
+          name: "Transfers",
+          screen: "Transfer",
           desc: "Transfer to another account !",
           image: require("../assets/images/transfer.png")
      },
      {
           id: "pays",
-          name: "pays",
-          screen: "None",
+          name: "Pays",
+          screen: "Pay",
           desc: "Pay your bills !",
-          image: require("../assets/images/pay.png")
+          image: require("../assets/images/smartphone.png")
      },
      {
           id: "histories",
-          name: "histories",
-          screen: "None",
+          name: "Histories",
+          screen: "History",
           desc: "Check all your transactions !",
           image: require("../assets/images/history.png")
      },
      {
           id: "charges",
-          name: "charges",
+          name: "Charges",
           screen: "Charge",
           desc: "Charge money to your account !",
           image: require("../assets/images/charge.png")
      },
 ];
+
+const transfer_type = [
+     {
+          id: "transfers",
+          name: "Send",
+          screen: "Send",
+          desc: "Send money !",
+          image: require("../assets/images/send.png")
+     },
+     {
+          id: "valid",
+          name: "Receive",
+          screen: "Receive",
+          desc: "Receive money !",
+          image: require("../assets/images/pay.png")
+     },
+];
+
+const pay_type = [
+     {
+          id: "meth1",
+          name: "Methode 1",
+          screen: "none",
+          desc: "Pay your bills !",
+          image: require("../assets/images/none.png")
+     },
+     {
+          id: "meth2",
+          name: "Methode 2",
+          screen: "None",
+          desc: "Pay your bills !",
+          image: require("../assets/images/none.png")
+     },
+];
+
 
 const products = [
      {
@@ -61,15 +96,8 @@ const explore = [
      require("../assets/images/illustration_2.png")
 ];
 
-const profile = {
-     username: "react-ui-kit",
-     location: "Europe",
-     email: "contact@react-ui-kit.com",
-     avatar: require("../assets/images/illustration_3.png"),
-     budget: 1000,
-     monthly_cap: 5000,
-     notifications: true,
-     newsletter: false
+let profile = {
+
 };
 
-export { categories, explore, products, profile };
+export { categories, explore, products, profile, transfer_type, pay_type };
